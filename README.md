@@ -1,3 +1,3 @@
 # PADI
 
-Google Docs: https://docs.google.com/document/d/1VD-qAvumTH-XX1h2ahDMLyBh6Vf2ITgr7GOdC0csZc8/edit?usp=sharing
+Google Docs: https://docs.google.com/document/d/1b3THD8UkT2skhm51zVy4keNQonKm0bMTgq5PLnlHH_g/edit?usp=sharing
