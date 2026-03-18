@@ -128,7 +128,7 @@ class TDAgent(Agent):
         gamma=0.99,  # Discount factor
         epsilon=0.1,  # Exploration rate
         epsilon_decay=0.995,  # Epsilon decay per episode
-        epsilon_min=0.01,  # Minimum epsilon
+        epsilon_min=0.1,  # Minimum epsilon
     ):
         """
         Initialize the TD agent.
@@ -171,12 +171,16 @@ class TDAgent(Agent):
         Returns:
             tuple[int|float, ...]: Discretized state as a hashable tuple
         """
-        # 20 pixels for positions, 2 units for velocity
-        fish_bin = int(state['fish_y'] // 20)
-        bar_bin = int(state['bar_y'] // 20)
+        # 1. Calculate relative distance
+        bar_center = state['bar_y'] + 40  # The bar is 80 pixels tall, center is +40
+        relative_dist = state['fish_y'] - bar_center
+        
+        # 2. Bin the distance and velocity
+        # We can afford smaller, more precise bins now because the state space is smaller!
+        dist_bin = int(relative_dist // 10) 
         vel_bin = int(state['bar_vel'] // 2)
         
-        return (fish_bin, bar_bin, vel_bin)
+        return (dist_bin, vel_bin)
 
     # ------------------------------------------------------------------
     # Q-value helpers
