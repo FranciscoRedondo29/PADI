@@ -171,7 +171,12 @@ class TDAgent(Agent):
         Returns:
             tuple[int|float, ...]: Discretized state as a hashable tuple
         """
-        raise NotImplementedError
+        # 20 pixels for positions, 2 units for velocity
+        fish_bin = int(state['fish_y'] // 20)
+        bar_bin = int(state['bar_y'] // 20)
+        vel_bin = int(state['bar_vel'] // 2)
+        
+        return (fish_bin, bar_bin, vel_bin)
 
     # ------------------------------------------------------------------
     # Q-value helpers
@@ -196,7 +201,7 @@ class TDAgent(Agent):
 
     def get_action(self, state):
         """
-        Choose action, e.g., using epsilon-greedy strategy.
+        Choose action, using epsilon-greedy strategy.
 
         Args:
             state (dict[str, float]): Original game state (not yet discretized).
@@ -204,7 +209,24 @@ class TDAgent(Agent):
         Returns:
             bool: True to thrust, False to fall
         """
-        raise NotImplementedError
+        # 1. Exploration: Take a random action with probability epsilon
+        if self.training and random.random() < self.epsilon:
+            return random.choice([True, False])
+            
+        # 2. Exploitation: Choose the best action based on Q-values
+        discrete_state = self.discretize_state(state)
+        
+        q_thrust = self.get_q_value(discrete_state, True)
+        q_fall = self.get_q_value(discrete_state, False)
+        
+        # Pick the action with the highest Q-value
+        if q_thrust > q_fall:
+            return True
+        elif q_fall > q_thrust:
+            return False
+        else:
+            # If Q-values are equal (e.g., at the start of training), break ties randomly
+            return random.choice([True, False])
 
     # ------------------------------------------------------------------
     # Episode bookkeeping
@@ -282,7 +304,25 @@ class QLearningAgent(TDAgent):
         if not self.training:
             return
 
-        raise NotImplementedError
+        # FLIP THE COST TO A REWARD (-1 cost becomes +1 reward)
+        actual_reward = -reward 
+
+        discrete_state = self.discretize_state(state)
+        discrete_next_state = self.discretize_state(next_state)
+
+        current_q = self.get_q_value(discrete_state, action)
+
+        if done:
+            max_next_q = 0.0 
+        else:
+            q_thrust = self.get_q_value(discrete_next_state, True)
+            q_fall = self.get_q_value(discrete_next_state, False)
+            max_next_q = max(q_thrust, q_fall)
+
+        # Use actual_reward instead of reward
+        new_q = current_q + self.alpha * (actual_reward + self.gamma * max_next_q - current_q)
+        
+        self.q_table[(discrete_state, action)] = new_q
 
 
 class SarsaLearningAgent(TDAgent):
@@ -310,4 +350,20 @@ class SarsaLearningAgent(TDAgent):
         if not self.training:
             return
 
-        raise NotImplementedError
+        # FLIP THE COST TO A REWARD
+        actual_reward = -reward 
+
+        discrete_state = self.discretize_state(state)
+        discrete_next_state = self.discretize_state(next_state)
+
+        current_q = self.get_q_value(discrete_state, action)
+
+        if done:
+            next_q = 0.0 
+        else:
+            next_q = self.get_q_value(discrete_next_state, next_action)
+
+        # Use actual_reward instead of reward
+        new_q = current_q + self.alpha * (actual_reward + self.gamma * next_q - current_q)
+        
+        self.q_table[(discrete_state, action)] = new_q

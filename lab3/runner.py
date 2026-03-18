@@ -123,8 +123,8 @@ if __name__ == "__main__":
     # Use classes instead of instances to re-initialize per run
     agent_classes = [
         ("PredictiveAgent", PredictiveAgent), # provides a baseline, it does not learn
-        #("Q-Learning", QLearningAgent),
-        #("SARSA", SarsaLearningAgent),
+        ("Q-Learning", QLearningAgent),
+        ("SARSA", SarsaLearningAgent),
     ]
 
     NUM_RUNS = 1 # while debugging, set to 1 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
                 num_episodes=None,
                 do_learning=False,
                 verbose=(run == 0),
-                visualize=True, # change to False to remove the visualization
+                visualize=False, # <-- CHANGE THIS TO FALSE
             )
 
             if test_stats:
